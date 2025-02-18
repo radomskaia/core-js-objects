@@ -225,10 +225,11 @@ function getJSON(obj) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const parse = JSON.parse(json);
+  Object.setPrototypeOf(parse, proto);
+  return parse;
 }
-
 /**
  * Sorts the specified array by country name first and city name
  * (if countries are equal) in ascending order.
@@ -255,10 +256,17 @@ function fromJSON(/* proto, json */) {
  *      { country: 'Russia',  city: 'Saint Petersburg' }
  *    ]
  */
-function sortCitiesArray(/* arr */) {
-  throw new Error('Not implemented');
+function sortCitiesArray(arr) {
+  const result = [...arr];
+  result.sort((a, b) => {
+    let diff = a.country.charCodeAt(0) - b.country.charCodeAt(0);
+    if (diff === 0) {
+      diff = a.city.charCodeAt(0) - b.city.charCodeAt(0);
+    }
+    return diff;
+  });
+  return result;
 }
-
 /**
  * Groups elements of the specified array by key.
  * Returns multimap of keys extracted from array elements via keySelector callback
@@ -289,8 +297,16 @@ function sortCitiesArray(/* arr */) {
  *    "Poland" => ["Lodz"]
  *   }
  */
-function group(/* array, keySelector, valueSelector */) {
-  throw new Error('Not implemented');
+function group(array, keySelector, valueSelector) {
+  const groupObj = Object.groupBy(array, keySelector);
+  const result = new Map();
+  Object.entries(groupObj).forEach(([key, value]) => {
+    result.set(key, []);
+    value.forEach((item) => {
+      result.get(key).push(valueSelector(item));
+    });
+  });
+  return result;
 }
 
 /**
@@ -348,32 +364,45 @@ function group(/* array, keySelector, valueSelector */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  string: '',
+  element(value) {
+    this.string += value;
+    return this;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    this.string += `#${value}`;
+    return this;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    this.string += `.${value}`;
+    return this;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    this.string += `[${value}]`;
+    return this;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    this.string += `:${value}`;
+    return this;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    this.string += `::${value}`;
+    return this;
   },
 
   combine(/* selector1, combinator, selector2 */) {
     throw new Error('Not implemented');
+  },
+
+  stringify() {
+    const stringify = this.string;
+    this.string = '';
+    return stringify;
   },
 };
 
