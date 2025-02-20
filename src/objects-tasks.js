@@ -298,13 +298,14 @@ function sortCitiesArray(arr) {
  *   }
  */
 function group(array, keySelector, valueSelector) {
-  const groupObj = Object.groupBy(array, keySelector);
   const result = new Map();
-  Object.entries(groupObj).forEach(([key, value]) => {
-    result.set(key, []);
-    value.forEach((item) => {
-      result.get(key).push(valueSelector(item));
-    });
+  array.forEach((obj) => {
+    const key = keySelector(obj);
+    const value = valueSelector(obj);
+    if (!result.has(key)) {
+      result.set(key, []);
+    }
+    result.get(key).push(value);
   });
   return result;
 }
